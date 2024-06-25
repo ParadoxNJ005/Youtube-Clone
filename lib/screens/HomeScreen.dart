@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:youtube/common/apis.dart';
 import 'package:youtube/common/colors.dart';
+import 'package:youtube/models/videoModel.dart';
+import 'package:youtube/widgets/VideoCard.dart';
+import 'dart:developer';
+import 'package:rxdart/rxdart.dart'; // Add this import
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -9,6 +14,14 @@ class Homescreen extends StatefulWidget {
 }
 
 class _HomescreenState extends State<Homescreen> {
+  List<Video> _list = [];
+
+  @override
+  void initState() {
+    super.initState();
+    API.getAllVideos();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,6 +56,51 @@ class _HomescreenState extends State<Homescreen> {
           ),
         ],
       ),
+
+      //---------------------------body------------------------------------------------
+      body: StreamBuilder(
+        stream: API.getAllVideos(),
+        builder: (context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+          switch (snapshot.connectionState) {
+            case ConnectionState.waiting:
+            case ConnectionState.none:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+            case ConnectionState.active:
+            case ConnectionState.done:
+              if (snapshot.hasData) {
+                final data = snapshot.data;
+                _list = data?.map((e) => Video.fromJson(e)).toList() ?? [];
+
+                if (_list.isEmpty) {
+                  return Center(
+                    child: Container(
+                      child:
+                          Text("No Data Found", style: TextStyle(fontSize: 35)),
+                    ),
+                  );
+                } else {
+                  return ListView.builder(
+                    itemCount: _list.length,
+                    shrinkWrap: true,
+                    itemBuilder: (context, index) {
+                      return Videocard(video: _list[index]);
+                    },
+                  );
+                }
+              } else {
+                return Center(
+                  child: Text("No Data Found", style: TextStyle(fontSize: 35)),
+                );
+              }
+            default:
+              return const Center(
+                child: CircularProgressIndicator(),
+              );
+          }
+        },
+      ),
     );
   }
 
@@ -59,7 +117,7 @@ class _HomescreenState extends State<Homescreen> {
                 padding: const EdgeInsets.only(left: 10, top: 10),
                 child: Image.asset(
                   "assets/logo.png",
-                  width: 55,
+                  width: 100,
                 ),
               ),
               SizedBox(

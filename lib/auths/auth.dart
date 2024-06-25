@@ -136,18 +136,28 @@ class _AuthScreenState extends State<AuthScreen> {
                       Container(
                         width: double.infinity,
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (_formkey.currentState!.validate()) {
                               _formkey.currentState!.save();
                               if (isLogin) {
-                                API.login(
+                                await API.login(
                                     email: emailController.text.trim(),
                                     password: passwordController.text.trim());
+
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => Bottomnav()));
                               } else {
                                 API.signUp(
                                     email: emailController.text.trim(),
                                     password: passwordController.text.trim(),
                                     username: usernameController.text.trim());
+
+                                Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (_) => Bottomnav()));
                               }
                             }
                           },

@@ -21,11 +21,20 @@ class _SplashscreenState extends State<Splashscreen> {
       SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
           statusBarColor: Colors.white,
           systemNavigationBarColor: Colors.white));
-      Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => const AuthScreen(),
-          ));
+
+      if (supabase.auth.currentUser == null) {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const AuthScreen(),
+            ));
+      } else {
+        Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const Bottomnav(),
+            ));
+      }
     });
   }
 

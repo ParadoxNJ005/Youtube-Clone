@@ -49,6 +49,9 @@ dev_dependencies:
   lottie: ^3.1.2
   flutter_svg: ^2.0.10+1
   supabase_flutter: ^2.5.6
+  cached_network_image: ^3.3.1
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
