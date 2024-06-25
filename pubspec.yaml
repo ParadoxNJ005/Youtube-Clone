@@ -52,6 +52,8 @@ dev_dependencies:
   cached_network_image: ^3.3.1
   image_picker: ^1.1.2
   permission_handler: ^11.3.1
+  video_player: ^2.8.7
+  chewie: ^1.8.1
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

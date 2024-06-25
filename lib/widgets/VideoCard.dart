@@ -34,7 +34,11 @@ class _VideocardState extends State<Videocard> {
         child: InkWell(
           onTap: () {
             Navigator.push(
-                context, MaterialPageRoute(builder: (_) => Detailscreen()));
+                context,
+                MaterialPageRoute(
+                    builder: (_) => Detailscreen(
+                          id: widget.video.id,
+                        )));
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

@@ -171,4 +171,23 @@ class API {
     log("${controller.stream}");
     return controller.stream;
   }
+
+  static Stream<Map<String, dynamic>> getVideoById(String id) {
+    final controller = BehaviorSubject<Map<String, dynamic>>();
+
+    supabase.from('videos').select().eq('id', id).single().then((response) {
+      if (response != null) {
+        controller.add(response as Map<String, dynamic>);
+      } else {
+        log("Error in fetching video with ID $id: ${response}");
+        controller.addError("Error in fetching video");
+      }
+    }).catchError((e) {
+      log("Error in fetching video with ID $id: ${e}");
+      controller.addError(e);
+    });
+
+    log("Fetching video with ID $id");
+    return controller.stream;
+  }
 }
