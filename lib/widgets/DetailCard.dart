@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:youtube/common/apis.dart';
+import 'package:youtube/common/colors.dart';
 import 'package:youtube/models/videoModel.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -22,6 +23,7 @@ class _DetailcardState extends State<Detailcard>
   late Future<String> _adminNameFuture;
   late Future<String> _adminImageFuture;
   late Future<List<Video>> _videosFuture;
+  bool issub = false;
 
   bool isVideoPlaying = false;
 
@@ -247,8 +249,12 @@ class _DetailcardState extends State<Detailcard>
                             maxLines: 1,
                           ),
                           trailing: TextButton(
-                            onPressed: () {},
-                            child: Text('SUBSCRIBE',
+                            onPressed: () {
+                              setState(() {
+                                issub = !issub;
+                              });
+                            },
+                            child: Text(issub ? 'SUBSCRIBED' : 'SUBSCRIBE',
                                 style:
                                     TextStyle(color: Colors.red, fontSize: 18)),
                           ),
@@ -296,11 +302,22 @@ class _DetailcardState extends State<Detailcard>
     );
   }
 
+  void showSnackbar(BuildContext context, String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(
+          msg,
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.red.withOpacity(.8),
+        behavior: SnackBarBehavior.floating));
+  }
+
   Widget _buildAction(BuildContext context, IconData icon, String label) {
     return GestureDetector(
       onTap: () async {
         if (label == "Save") {
           await API.saveVideo(widget.video!);
+          showSnackbar(context, "saving");
         }
       },
       child: Column(

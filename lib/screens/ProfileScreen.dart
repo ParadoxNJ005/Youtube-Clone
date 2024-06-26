@@ -26,6 +26,7 @@ class _ProfilescreenState extends State<Profilescreen> {
   String? _image;
 
   List<Video> _list = [];
+  List<Video> _bist = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -67,8 +68,11 @@ class _ProfilescreenState extends State<Profilescreen> {
               icon: Icon(Icons.logout_outlined),
               onPressed: () async {
                 await supabase.auth.signOut();
-                Navigator.pushReplacement(
-                    context, MaterialPageRoute(builder: (_) => AuthScreen()));
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => AuthScreen()),
+                  (route) => false,
+                );
               },
               iconSize: 28,
             ),
@@ -320,10 +324,9 @@ class _ProfilescreenState extends State<Profilescreen> {
                       case ConnectionState.active:
                       case ConnectionState.done:
                         if (snapshot.hasData) {
-                          _list.clear();
                           final data = snapshot.data!;
-                          _list = data.map((e) => Video.fromJson(e)).toList();
-                          if (_list.isEmpty) {
+                          _bist = data.map((e) => Video.fromJson(e)).toList();
+                          if (_bist.isEmpty) {
                             return Center(
                               child: Text(
                                 "No Data Found",
@@ -334,10 +337,10 @@ class _ProfilescreenState extends State<Profilescreen> {
                             return ListView.builder(
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
-                              itemCount: _list.length,
+                              itemCount: _bist.length,
                               itemBuilder: (context, index) {
                                 // Ensure index is within bounds
-                                if (index < _list.length) {
+                                if (index < _bist.length) {
                                   return InkWell(
                                     onTap: () {
                                       // Navigator.push(
@@ -365,7 +368,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                                               color: Colors.transparent,
                                               child: CachedNetworkImage(
                                                 imageUrl:
-                                                    _list[index].thumbnailUrl,
+                                                    _bist[index].thumbnailUrl,
                                                 placeholder: (context, url) =>
                                                     CircularProgressIndicator(),
                                                 errorWidget:
@@ -382,7 +385,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                                                 left: 2,
                                                 bottom: 2),
                                             child: Text(
-                                              _list[index].title,
+                                              _bist[index].title,
                                               style: TextStyle(
                                                   fontSize: 15,
                                                   color: Colors.white),
@@ -564,7 +567,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                           print("Gallery permission denied");
                         }
                       },
-                      child: Image.asset('assets/logo.png')),
+                      child: Image.asset('assets/add_image.png')),
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           shape: const CircleBorder(),
@@ -590,7 +593,7 @@ class _ProfilescreenState extends State<Profilescreen> {
                           print("Camera permission denied");
                         }
                       },
-                      child: Image.asset('assets/logo.png'))
+                      child: Image.asset('assets/camera.png'))
                 ],
               )
             ],
