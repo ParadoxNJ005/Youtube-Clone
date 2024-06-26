@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:youtube/common/apis.dart';
 import 'package:youtube/common/colors.dart';
+import 'package:youtube/main.dart';
 import 'package:youtube/models/videoModel.dart';
 import 'package:youtube/widgets/VideoCard.dart';
 import 'dart:developer';
-import 'package:rxdart/rxdart.dart'; // Add this import
+import 'package:rxdart/rxdart.dart';
+import 'package:shimmer/shimmer.dart';
 
 class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
@@ -64,9 +66,10 @@ class _HomescreenState extends State<Homescreen> {
           switch (snapshot.connectionState) {
             case ConnectionState.waiting:
             case ConnectionState.none:
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              // return const Center(
+              //   child: CircularProgressIndicator(),
+              // );
+              return _buildShimmer();
             case ConnectionState.active:
             case ConnectionState.done:
               if (snapshot.hasData) {
@@ -85,7 +88,11 @@ class _HomescreenState extends State<Homescreen> {
                     itemCount: _list.length,
                     shrinkWrap: true,
                     itemBuilder: (context, index) {
-                      return Videocard(video: _list[index]);
+                      return Videocard(
+                        video: _list[index],
+                        nav: true,
+                        profile: false,
+                      );
                     },
                   );
                 }
@@ -101,6 +108,59 @@ class _HomescreenState extends State<Homescreen> {
           }
         },
       ),
+    );
+  }
+
+  Widget _buildShimmer() {
+    return ListView.builder(
+      itemCount: 10,
+      itemBuilder: (context, index) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding:
+                    const EdgeInsets.only(top: 35.0, left: 16.0, right: 16.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: double.infinity,
+                    height: 150.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.only(top: 10.0, left: 16.0, right: 16.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: mq.width * .7,
+                    height: 15.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Padding(
+                padding:
+                    const EdgeInsets.only(top: 10.0, left: 16.0, right: 16.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    width: mq.width * .3,
+                    height: 15.0,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

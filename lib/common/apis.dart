@@ -4,6 +4,7 @@ import 'package:youtube/common/credentials.dart';
 import 'package:youtube/main.dart';
 import 'package:youtube/models/userModel.dart';
 import 'package:rxdart/rxdart.dart';
+import 'package:youtube/models/videoModel.dart';
 
 class API {
   static String? uid;
@@ -67,10 +68,10 @@ class API {
     }
   }
 
-  static Future<void> getUser() async {
+  static Future<void> getUser(String id) async {
     try {
       final response =
-          await supabase.from('user').select().eq('uid', uid!).maybeSingle();
+          await supabase.from('user').select().eq('uid', id).maybeSingle();
 
       if (response == null) {
         log("Error fetching user data: ${response}");
@@ -188,6 +189,66 @@ class API {
     });
 
     log("Fetching video with ID $id");
+    return controller.stream;
+  }
+
+  static Future<void> saveVideo(Video video) async {
+    try {
+      final existingVideoResponse = await supabase
+          .from('saved')
+          .select()
+          .eq('url', video.url)
+          .maybeSingle();
+
+      if (existingVideoResponse != null) {
+        log("Video already saved");
+      } else {
+        final response = await supabase.from('saved').insert({
+          'author': video.author,
+          'dislikes': video.dislikes,
+          'duration': video.duration,
+          'uid': me!.uid,
+          'thumbnailUrl': video.thumbnailUrl,
+          'timestamp': video.timestamp,
+          'title': video.title,
+          'url': video.url,
+          'viewCount': video.viewCount,
+          'likes': video.likes
+        });
+
+        if (response.error != null) {
+          log("Error in saving video: ${response.error.message}");
+        } else {
+          log("Video saved: ${response.data}");
+        }
+      }
+    } catch (e) {
+      log("Error in saving video: $e");
+    }
+  }
+
+  static Stream<List<Map<String, dynamic>>> getSavedVideo() {
+    final controller = BehaviorSubject<List<Map<String, dynamic>>>();
+
+    try {
+      if (me != null && me!.uid != null) {
+        supabase.from('saved').select().eq('uid', me!.uid).then((response) {
+          if (response != null && response is List<Map<String, dynamic>>) {
+            controller.add(response);
+          } else {
+            log("Error in fetching videos: ${response}");
+            controller.addError("Error in fetching videos");
+          }
+        }).catchError((e) {
+          log("Error in fetching videos: ${e}");
+          controller.addError(e);
+        });
+      }
+    } catch (e) {
+      log("user is null: ${e}");
+    }
+
+    log("${controller.stream}");
     return controller.stream;
   }
 }

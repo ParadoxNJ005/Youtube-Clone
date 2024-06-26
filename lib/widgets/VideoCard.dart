@@ -7,7 +7,13 @@ import 'package:youtube/screens/DetailScreen.dart';
 
 class Videocard extends StatefulWidget {
   final Video video;
-  const Videocard({super.key, required this.video});
+  final bool nav;
+  final bool profile;
+  const Videocard(
+      {super.key,
+      required this.video,
+      required this.nav,
+      required this.profile});
 
   @override
   State<Videocard> createState() => _VideocardState();
@@ -33,12 +39,14 @@ class _VideocardState extends State<Videocard> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
         child: InkWell(
           onTap: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => Detailscreen(
-                          id: widget.video.id,
-                        )));
+            if (widget.nav) {
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => Detailscreen(
+                            id: widget.video.id,
+                          )));
+            }
           },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -48,8 +56,8 @@ class _VideocardState extends State<Videocard> {
 
               ClipRRect(
                 child: CachedNetworkImage(
-                  height: mq.height * .2,
-                  width: double.infinity,
+                  height: !widget.profile ? mq.height * .2 : mq.height * .125,
+                  width: !widget.profile ? double.infinity : mq.width * .5,
                   imageUrl: widget.video.thumbnailUrl,
                   imageBuilder: (context, imageProvider) => Container(
                     decoration: BoxDecoration(
@@ -59,7 +67,13 @@ class _VideocardState extends State<Videocard> {
                       ),
                     ),
                   ),
-                  placeholder: (context, url) => CircularProgressIndicator(),
+                  placeholder: (context, url) => Center(
+                    child: SizedBox(
+                      height: 100.0,
+                      width: 100.0,
+                      child: CircularProgressIndicator(),
+                    ),
+                  ),
                   errorWidget: (context, url, error) => Icon(Icons.error),
                 ),
               ),

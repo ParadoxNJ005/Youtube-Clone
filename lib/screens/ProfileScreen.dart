@@ -1,5 +1,5 @@
 import 'dart:io';
-
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:youtube/auths/auth.dart';
 import 'package:youtube/common/apis.dart';
@@ -7,6 +7,11 @@ import 'package:youtube/main.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:youtube/models/videoModel.dart';
+import 'package:youtube/widgets/DetailCard.dart';
+import 'package:youtube/widgets/HistoryCard.dart';
+import 'package:youtube/widgets/ProfileCard.dart';
+import 'package:youtube/widgets/VideoCard.dart';
 
 class Profilescreen extends StatefulWidget {
   const Profilescreen({super.key});
@@ -20,12 +25,15 @@ class _ProfilescreenState extends State<Profilescreen> {
   String about = '';
   String? _image;
 
+  List<Video> _list = [];
   final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    API.getUser();
+    final supabase = Supabase.instance.client;
+    final currentUser = supabase.auth.currentUser;
+    API.getUser(currentUser!.id);
   }
 
   final TextEditingController _nameController = TextEditingController();
@@ -179,7 +187,233 @@ class _ProfilescreenState extends State<Profilescreen> {
                       fontWeight: FontWeight.bold,
                       color: Colors.white),
                 ),
-              )
+              ),
+              Container(
+                height: 200,
+                child: StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: API.getAllVideos(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                      case ConnectionState.none:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      case ConnectionState.active:
+                      case ConnectionState.done:
+                        if (snapshot.hasData) {
+                          final data = snapshot.data!;
+                          _list = data.map((e) => Video.fromJson(e)).toList();
+                          if (_list.isEmpty) {
+                            return Center(
+                              child: Text(
+                                "No Data Found",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            );
+                          } else {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _list.length,
+                              itemBuilder: (context, index) {
+                                // Ensure index is within bounds
+                                if (index < _list.length) {
+                                  return InkWell(
+                                    onTap: () {
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (_) => Detailcard(
+                                      //               video: _list[index],
+                                      //             )));
+                                    },
+                                    child: Container(
+                                      height: 200,
+                                      width: 200,
+                                      margin: EdgeInsets.all(10),
+                                      color: Colors.transparent,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: Container(
+                                              height: 100,
+                                              width: 190,
+                                              color: Colors.transparent,
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    _list[index].thumbnailUrl,
+                                                placeholder: (context, url) =>
+                                                    CircularProgressIndicator(),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Icon(Icons.error),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 3,
+                                                right: 1,
+                                                left: 2,
+                                                bottom: 2),
+                                            child: Text(
+                                              _list[index].title,
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.white),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Container(); // Return an empty container if index is out of bounds
+                                }
+                              },
+                            );
+                          }
+                        } else {
+                          return Center(
+                            child: Text(
+                              "No Data Found",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          );
+                        }
+                      default:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                    }
+                  },
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  "Saved for later",
+                  style: TextStyle(
+                      fontSize: 25,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+              ),
+              Container(
+                height: 200,
+                child: StreamBuilder<List<Map<String, dynamic>>>(
+                  stream: API.getSavedVideo(),
+                  builder: (context, snapshot) {
+                    switch (snapshot.connectionState) {
+                      case ConnectionState.waiting:
+                      case ConnectionState.none:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      case ConnectionState.active:
+                      case ConnectionState.done:
+                        if (snapshot.hasData) {
+                          _list.clear();
+                          final data = snapshot.data!;
+                          _list = data.map((e) => Video.fromJson(e)).toList();
+                          if (_list.isEmpty) {
+                            return Center(
+                              child: Text(
+                                "No Data Found",
+                                style: TextStyle(fontSize: 18),
+                              ),
+                            );
+                          } else {
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: _list.length,
+                              itemBuilder: (context, index) {
+                                // Ensure index is within bounds
+                                if (index < _list.length) {
+                                  return InkWell(
+                                    onTap: () {
+                                      // Navigator.push(
+                                      //     context,
+                                      //     MaterialPageRoute(
+                                      //         builder: (_) => Detailcard(
+                                      //               video: _list[index],
+                                      //             )));
+                                    },
+                                    child: Container(
+                                      height: 200,
+                                      width: 200,
+                                      margin: EdgeInsets.all(10),
+                                      color: Colors.transparent,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          ClipRRect(
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: Container(
+                                              height: 100,
+                                              width: 190,
+                                              color: Colors.transparent,
+                                              child: CachedNetworkImage(
+                                                imageUrl:
+                                                    _list[index].thumbnailUrl,
+                                                placeholder: (context, url) =>
+                                                    CircularProgressIndicator(),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Icon(Icons.error),
+                                                fit: BoxFit.cover,
+                                              ),
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(
+                                                top: 3,
+                                                right: 1,
+                                                left: 2,
+                                                bottom: 2),
+                                            child: Text(
+                                              _list[index].title,
+                                              style: TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.white),
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                } else {
+                                  return Container(); // Return an empty container if index is out of bounds
+                                }
+                              },
+                            );
+                          }
+                        } else {
+                          return Center(
+                            child: Text(
+                              "No Data Found",
+                              style: TextStyle(fontSize: 18),
+                            ),
+                          );
+                        }
+                      default:
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                    }
+                  },
+                ),
+              ),
             ],
           ),
         ),

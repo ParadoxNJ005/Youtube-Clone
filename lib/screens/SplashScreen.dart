@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:youtube/auths/auth.dart';
+import 'package:youtube/common/apis.dart';
 import 'package:youtube/main.dart';
 import 'package:youtube/screens/HomeScreen.dart';
 import 'package:youtube/widgets/bottomnav.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class Splashscreen extends StatefulWidget {
   const Splashscreen({super.key});
@@ -22,20 +25,33 @@ class _SplashscreenState extends State<Splashscreen> {
           statusBarColor: Colors.white,
           systemNavigationBarColor: Colors.white));
 
-      if (supabase.auth.currentUser == null) {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const AuthScreen(),
-            ));
-      } else {
-        Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const Bottomnav(),
-            ));
-      }
+      checkSessionAndNavigate(context);
     });
+  }
+
+  void checkSessionAndNavigate(BuildContext context) async {
+    final supabase = Supabase.instance.client;
+    final currentUser = supabase.auth.currentUser;
+
+    if (currentUser == null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const AuthScreen(),
+        ),
+      );
+    } else {
+      final userId = currentUser.id;
+      await API.getUser(
+          userId); // Make sure this is an async operation if it performs network requests
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (_) =>
+              const Bottomnav(), // Ensure Bottomnav() is defined in your project
+        ),
+      );
+    }
   }
 
   @override
@@ -47,19 +63,11 @@ class _SplashscreenState extends State<Splashscreen> {
       body: Stack(children: [
         //app logo
         Positioned(
-            top: mq.height * .35,
+            top: mq.height * .27,
             left: mq.width * .38,
-            width: mq.width * .25,
-            child: Image.asset('assets/logo.png')),
-
-        //google login button
-        Positioned(
-            bottom: mq.height * .15,
-            width: mq.width,
-            child: const Text('Welcome to Youtube',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    fontSize: 16, color: Colors.black87, letterSpacing: .5))),
+            width: mq.width * .35,
+            height: mq.height * .35,
+            child: SvgPicture.asset("assets/youtube.svg")),
       ]),
     );
   }
